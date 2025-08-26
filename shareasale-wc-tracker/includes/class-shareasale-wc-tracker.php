@@ -30,10 +30,9 @@ class ShareASale_WC_Tracker {
 
 	private function load_dependencies() {
 		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-shareasale-wc-tracker-admin.php';
+		require_once plugin_dir_path( __FILE__ ) . 'class-shareasale-wc-tracker-config.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-shareasale-wc-tracker-pixel.php';
-		require_once plugin_dir_path( __FILE__ ) . 'class-shareasale-wc-tracker-reconciler.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-shareasale-wc-tracker-mastertag.php';
-		require_once plugin_dir_path( __FILE__ ) . 'class-shareasale-wc-tracker-autovoid.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-shareasale-wc-tracker-analytics.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-shareasale-wc-tracker-loader.php';
 		require_once plugin_dir_path( __FILE__ ) . 'class-shareasale-wc-tracker-installer.php';
@@ -49,10 +48,6 @@ class ShareASale_WC_Tracker {
 	private function define_frontend_hooks() {
 		$mastertag = new ShareASale_WC_Tracker_Mastertag( $this->version );
 		$this->loader->add_action( 'wp_enqueue_scripts', $mastertag, 'enqueue_scripts' );
-
-		$autovoid = new ShareASale_WC_Tracker_Autovoid( $this->version );
-		$this->loader->add_action( 'wp_enqueue_scripts', $autovoid, 'enqueue_scripts' );
-
 		$this->loader->add_action( 'wp_head', $this->analytics, 'wp_head',
 			array(
 				'priority' => 10,
@@ -119,21 +114,12 @@ class ShareASale_WC_Tracker {
 		$this->loader->add_action( 'admin_init',            $admin, 'admin_init' );
 		$this->loader->add_action( 'admin_init',            $admin, 'plugin_upgrade' );
 		$this->loader->add_action( 'admin_menu',            $admin, 'admin_menu' );
-		$this->loader->add_action( 'shareasale_wc_tracker_generate_scheduled_datafeed', $admin, 'shareasale_wc_tracker_generate_scheduled_datafeed' );
-		$this->loader->add_action( 'wp_ajax_shareasale_wc_tracker_generate_datafeed',   $admin, 'wp_ajax_shareasale_wc_tracker_generate_datafeed' );
-		$this->loader->add_action( 'wp_ajax_shareasale_wc_tracker_ftp_failed_dismiss_notice',   $admin, 'wp_ajax_shareasale_wc_tracker_ftp_failed_dismiss_notice' );
 		//for adding and saving custom post meta (ShareASale category/subactegory number values) to the WC products page general section
 		$this->loader->add_action( 'woocommerce_product_options_general_product_data', $admin, 'woocommerce_product_options_general_product_data' );
 		$this->loader->add_action( 'woocommerce_process_product_meta',                 $admin, 'woocommerce_process_product_meta' );
-		//for adding and saving custom post meta ("upload to ShareASale?" checkbox) to the WC coupons page general section
-		$this->loader->add_action( 'woocommerce_coupon_options', 	  $admin, 'woocommerce_coupon_options' );
-		$this->loader->add_action( 'woocommerce_coupon_options_save', $admin, 'woocommerce_coupon_options_save',
-			array(
-				'priority' => 10,
-				'args' => 2,
-			)
-		);
 		$this->loader->add_action( 'admin_notices', $admin, 'admin_notices' );
+		
+
 
 		//admin filters
 		$this->loader->add_filter( 'plugin_action_links_' . SHAREASALE_WC_TRACKER_PLUGIN_FILENAME, $admin, 'render_settings_shortcut' );
@@ -141,21 +127,8 @@ class ShareASale_WC_Tracker {
 
 	private function define_woocommerce_hooks() {
 		//conversion tracking pixel
-		$this->loader->add_action( 'woocommerce_thankyou', $this->pixel, 'woocommerce_thankyou' );
-		//automatic reconciliation
-		$reconciler = new ShareASale_WC_Tracker_Reconciler( $this->version );
-		$this->loader->add_action( 'woocommerce_order_partially_refunded', $reconciler, 'woocommerce_order_partially_refunded',
-			array(
-				'priority' => 10,
-				'args' => 2,
-			)
-		);
-		$this->loader->add_action( 'woocommerce_order_fully_refunded', $reconciler, 'woocommerce_order_fully_refunded',
-			array(
-				'priority' => 10,
-				'args' => 2,
-			)
-		);
+		$this->loader->add_action( 'woocommerce_thankyou', $this->pixel, 'woocommerce_thankyou', array( 'priority' => 10, 'args' => 1 ) );
+
 		//advanced analytics
 		//the ShareASale_WC_Tracker_Analytics methods hooked to add_to_cart/ajax_added_to_cart must stay priority number lower than WC_Cart::calculate_totals' priority 20, since it's also hooked to those events. Using PHP_INT_MAX to ensure last place execution
 		$this->loader->add_action( 'woocommerce_add_to_cart',          $this->analytics, 'woocommerce_add_to_cart',
@@ -176,8 +149,8 @@ class ShareASale_WC_Tracker {
 				'args' => 0,
 			)
 		);
-		$this->loader->add_action( 'woocommerce_applied_coupon', $this->analytics, 'woocommerce_applied_coupon' );
-		$this->loader->add_action( 'woocommerce_thankyou',       $this->analytics, 'woocommerce_thankyou' );
+		$this->loader->add_action( 'woocommerce_applied_coupon', $this->analytics, 'woocommerce_applied_coupon', array( 'priority' => 10, 'args' => 1 ) );
+		$this->loader->add_action( 'woocommerce_thankyou',       $this->analytics, 'woocommerce_thankyou', array( 'priority' => 10, 'args' => 1 ) );
 	}
 
 	private function define_installer_hooks() {

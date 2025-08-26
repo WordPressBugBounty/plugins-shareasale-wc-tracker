@@ -42,15 +42,6 @@ class ShareASale_WC_Tracker_Analytics {
 			$this->version
 		);
 
-		// $this->shareasale_wc_tracker_add_data(
-		// 	'shareasale-wc-tracker-analytics',
-		// 	'var shareasaleWcTrackerAnalytics = ' . wp_json_encode(
-		// 		array(
-		// 			'merchantId' => $merchant_id,
-		// 		)
-		// 	)
-		// );
-
 		wp_localize_script(
 			'shareasale-wc-tracker-analytics',
 			'shareasaleWcTrackerAnalytics',
@@ -66,15 +57,6 @@ class ShareASale_WC_Tracker_Analytics {
 				array( 'jquery' ),
 				$this->version
 			);
-
-			// $this->shareasale_wc_tracker_add_data(
-			// 	'shareasale-wc-tracker-analytics-cart-observer',
-			// 	'var shareasaleWcTrackerAnalyticsCartObserver = ' . wp_json_encode(
-			// 		array(
-			// 			'ajaxurl' => admin_url( 'admin-ajax.php' ),
-			// 		)
-			// 	)
-			// );
 
 			wp_localize_script(
 				'shareasale-wc-tracker-analytics-cart-observer',
@@ -170,17 +152,6 @@ class ShareASale_WC_Tracker_Analytics {
 			$this->version
 		);
 
-		// $this->shareasale_wc_tracker_add_data(
-		// 	'shareasale-wc-tracker-analytics-add-to-cart',
-		// 	'var shareasaleWcTrackerAnalyticsAddToCart = ' . wp_json_encode(
-		// 		array(
-		// 			'skulist'      => $skulist,
-		// 			'pricelist'    => $pricelist,
-		// 			'quantitylist' => $quantitylist,
-		// 		)
-		// 	)
-		// );
-
 		wp_localize_script(
 			'shareasale-wc-tracker-analytics-add-to-cart',
 			'shareasaleWcTrackerAnalyticsAddToCart',
@@ -234,17 +205,6 @@ class ShareASale_WC_Tracker_Analytics {
 				$this->version
 			);
 
-			// $this->shareasale_wc_tracker_add_data(
-			// 	'shareasale-wc-tracker-analytics-begin-checkout',
-			// 	'var shareasaleWcTrackerAnalyticsBeginCheckout = ' . wp_json_encode(
-			// 		array(
-			// 			'skulist'      => $skulist,
-			// 			'pricelist'    => $pricelist,
-			// 			'quantitylist' => $quantitylist,
-			// 		)
-			// 	)
-			// );
-
 			wp_localize_script(
 				'shareasale-wc-tracker-analytics-begin-checkout',
 				'shareasaleWcTrackerAnalyticsBeginCheckout',
@@ -285,14 +245,6 @@ class ShareASale_WC_Tracker_Analytics {
 				$this->version
 			);
 
-			// $this->shareasale_wc_tracker_add_data(
-			// 	'shareasale-wc-tracker-analytics-applied-coupon',
-			// 	'var shareasaleWcTrackerAnalyticsAppliedCoupon = ' . wp_json_encode(
-			// 		array(
-			// 			'couponcode' => $coupon_code,
-			// 		)
-			// 	)
-			// );
 			wp_localize_script(
 				'shareasale-wc-tracker-analytics-applied-coupon',
 				'shareasaleWcTrackerAnalyticsAppliedCoupon',
@@ -303,9 +255,27 @@ class ShareASale_WC_Tracker_Analytics {
 		}
 	}
 
-	public function woocommerce_thankyou( $order_id ) {
+	public function woocommerce_thankyou( $order_id = null ) {
+		// Handle case where no order_id is passed (WooCommerce Blocks)
+		if ( ! $order_id ) {
+			// Try to get order_id from URL parameters (WooCommerce Blocks)
+			if ( isset( $_GET['key'] ) && ! empty( $_GET['key'] ) ) {
+				$order_key = wc_clean( wp_unslash( $_GET['key'] ) );
+				$order_id = wc_get_order_id_by_order_key( $order_key );
+			}
+			if ( ! $order_id ) {
+				return;
+			}
+		}
+		
 		//don't bother if we've already fired a standard ShareASale_WC_Tracker_Pixel() for this
         $order = wc_get_order( $order_id );
+        
+        // Additional check for valid order
+        if ( ! $order ) {
+			return;
+		}
+		
 		$prev_triggered = $order->get_meta( 'shareasale-wc-tracker-triggered', true );
 		if ( empty( $this->options['analytics-setting'] ) || $prev_triggered ) {
 			return;
@@ -323,15 +293,6 @@ class ShareASale_WC_Tracker_Analytics {
 			$this->version
 		);
 
-		// $this->shareasale_wc_tracker_add_data(
-		// 	'shareasale-wc-tracker-analytics-conversion',
-		// 	'var shareasaleWcTrackerAnalyticsConversion = ' . wp_json_encode(
-		// 		array(
-		// 			'ordernumber' => $ordernumber,
-		// 		)
-		// 	)
-		// );
-
 		wp_localize_script(
 			'shareasale-wc-tracker-analytics-conversion',
 			'shareasaleWcTrackerAnalyticsConversion',
@@ -340,31 +301,6 @@ class ShareASale_WC_Tracker_Analytics {
 			)
 		);
 	}
-
-	// public function shareasale_wc_tracker_add_data( $handle, $json ) {
-	// 	//Collect input data
-	// 	$data = array();
-	// 	$data[ $handle ] = $json;
-
-	//     // Append data for relevant script handle
-	//     add_filter(
-	//         'script_loader_tag',
-	//         function( $tag, $hndl, $src ) use ( &$data, $handle ) {
-	//             // Nothing to do if no match
-	//             if ( ! isset( $data[ $hndl ] ) ) {
-	//                 return $tag;
-	//             }
-
-	//             // Append data
-	//             $tag = sprintf(
-	//                 "<script type='text/javascript' data-noptimize>\n/* <![CDATA[ */\n%s;\n/* ]]> */\n</script>" . PHP_EOL,
-	//                 $data[ $hndl ]
-	//             ) . $tag;
-
-	//             return $tag;
-	//         },
-	// 	10, 3 );
-	// }
 
 	private function calculate_lists( $items ) {
 		$last_index = array_search( end( $items ), $items, true );
