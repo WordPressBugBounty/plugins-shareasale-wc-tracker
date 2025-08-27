@@ -2,9 +2,9 @@
 Contributors: rfrey2009
 Tags: Affiliate, marketing, ShareASale, tracking, WooCommerce
 Requires at least: 4.4
-Tested up to: 6.8.2
+Tested up to: 6.5.4
 Requires PHP: 5.6.4
-Stable tag: 1.6.0
+Stable tag: 1.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,14 +24,29 @@ b. If you would like to pass ShareASale special information about each Affiliate
 
 For example, if you chose "Device Type (mobile or desktop)" ShareASale would track the customer's device type, and inside ShareASale you could setup varying commission rule adjustments based on this device type. Feel free to send us any ideas for new merchant-defined types as plugin feedback to shareasale@shareasale.com.
 
-c. For advanced tracking features, continue to the plugin settings.
+c. To use automatic reconciliation between your WooCommerce cart and ShareASale so Affiliate commissions are automatically edited anytime you refund customers' orders, you'll need to add a few more settings.
+
+i. Login to ShareASale and visit Tools >> Merchant API page. If it's not enabled, click "enable API." Otherwise, find your API TOKEN and API KEY at the top of the page. Copy these so you can paste them into the plugin settings (iii below).
+
+ii. While still on that Merchant API page, change the "IP Address" drop-down setting to "Require IP address match for versions 1.1 and lower." You can also keep the default setting ("Require IP address match for all API calls") if you know your site's hosting IP address and can enter it above the token field. In either case, press "Update Settings" when finished.
+
+iii. In the plugin's settings page "Automate Reconciliation" tab back in WordPress, check the "Automate" box and then input your API settings (key/token) respective fields. Save your settings. If there is an error saving your settings and a red warning is at the top, contact ShareASale support (shareasale@shareasale.com) for assistance.
+
+iv. Any automatically edited or voided sales in ShareASale will be logged in the table at the bottom of this tab for reference.
+
+d. If you would like to create a product datafeed file for upload to ShareASale, go to the "Datafeed Generation" tab. With a few easy clicks our plugin will generate a basic product datafeed file you can upload to Creatives >> Datafeed in ShareASale. Be sure to review the errors/warnings after generating a product datafeed in case you need to make some fixes yourself. See this blog post for more information on the importance of a product datafeed.
+
+http://blog.shareasale.com/2014/04/21/free-slide-deck-from-shareasales-datafeed-tune-up-webinar/
+
+You can view or re-download the product datafeed files you've generated in the past 30 days in the table at the bottom of this tab.
+
+e. You can also upload the product datafeed to ShareASale via FTP now. If you don't have an FTP account yet, contact us (shareasale@shareasale.com) with your host's IP address (shown on the settings page) to request credentials. Once you have them, turn on the FTP upload checkbox and enter the credentials into the FTP Username and Password fields, then save settings. 
+
+This will also automatically schedule an ongoing daily FTP upload of a new product datafeed file, making your Affiliates' lives easier. :)
+
+f. If you'd like to automatically send ShareASale your WooCommerce coupons as a coupon/deal type creative, check the "send to ShareASale?" box while adding/editing a WooCommerce coupon. Make sure to choose a coupon description.
 
 == Changelog ==
-
-= 1.6.0 =
-* Removed unnecessary request from admin_init.
-* Removed datafeed and order reconciliation.
-* Added S2S tracking.
 
 = 1.5.7 =
 * Fixed critical error when deleting the plugin.

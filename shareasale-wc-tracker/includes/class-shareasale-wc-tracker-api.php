@@ -141,6 +141,15 @@ class ShareASale_WC_Tracker_API {
 		return $this;
 	}
 
+    public function master_tag_id() {
+        //Use different url to get the AWIN ID (master tag id).
+        $url = 'https://api.shareasale.com/webhooks/api/';
+		$this->action = 'awinid';
+        $url_default = $this->build_url();
+		$this->query  = $url . substr($url_default, strpos($url_default, '?'));
+		return $this;
+	}
+
 	public function exec() {
 		//build authentication headers before making API request
 		if ( ! $this->authenticate() ) {
